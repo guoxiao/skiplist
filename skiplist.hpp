@@ -48,7 +48,10 @@ class Iterator {
 public:
   Iterator() : ptr(nullptr){};
   Iterator(T *begin) : ptr(begin){};
-  Iterator operator=(T *begin) { ptr = begin; }
+  Iterator operator=(T *begin) {
+    ptr = begin;
+    return *this;
+  }
 
   Iterator &operator++() {
     *this = Iterator(ptr->next[0]);
@@ -59,9 +62,9 @@ public:
 
   bool operator==(const Iterator &rhs) const { return ptr == rhs.ptr; }
 
-  bool operator==(const T* p) const { return ptr == p; }
+  bool operator==(const T *p) const { return ptr == p; }
 
-  bool operator!=(const T* p) const { return ptr != p; }
+  bool operator!=(const T *p) const { return ptr != p; }
 
   operator bool() { return ptr != nullptr; }
 
