@@ -25,6 +25,13 @@ TEST(SkipList, insert) {
   EXPECT_EQ(s2["Hello"], "World");
   EXPECT_EQ(s2.find("Hello2")->value, "World2");
   EXPECT_EQ(s2["Hello2"], "World2");
+
+  std::string k("Movable");
+  std::string v("MovableValue");
+  auto it2 = s2.emplace(std::move(k), std::move(v));
+  EXPECT_EQ(it2->key, "Movable");
+  EXPECT_TRUE(k.empty());
+  EXPECT_TRUE(v.empty());
 }
 
 int main(int argc, char **argv) {

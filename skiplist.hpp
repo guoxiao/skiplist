@@ -203,6 +203,10 @@ public:
     return emplace(value.first, value.second);
   }
 
+  iterator insert(value_type &&value) {
+    return emplace(std::move(value.first), std::move(value.second));
+  }
+
   iterator find(const key_type &key) {
     iterator node = head_;
     for (int i = level_; i >= 0; i--) {
