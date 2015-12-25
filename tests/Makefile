@@ -1,8 +1,9 @@
-CXXFLAGS=-std=c++11 -g -O2 -Wall -Wextra -lpthread -Igoogletest/googletest/include -I.. -Igoogletest/googletest
+CXXFLAGS=-std=c++11 -g -O2 -Wall -Wextra -Igoogletest/googletest/include -I.. -Igoogletest/googletest
+LIBS=-lpthread
 
 all: skiplist
 gtest-all.o: googletest/googletest/src/gtest-all.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 skiplist: ../skiplist.hpp *.cpp Makefile gtest-all.o
-	$(CXX) $(CXXFLAGS)  -o skiplist_test *.cpp gtest-all.o
+	$(CXX) $(CXXFLAGS) $(LIBS) -o skiplist_test *.cpp gtest-all.o
