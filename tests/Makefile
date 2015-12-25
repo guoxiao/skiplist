@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++11 -g -O2 -lpthread -Igoogletest/googletest/include -I.. -Igoogletest/googletest
+CXXFLAGS=-std=c++11 -g -O2 -Wall -Wextra -lpthread -Igoogletest/googletest/include -I.. -Igoogletest/googletest
 
 all: skiplist
 gtest-all.o: googletest/googletest/src/gtest-all.cc
