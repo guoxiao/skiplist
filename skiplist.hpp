@@ -74,8 +74,6 @@ public:
 
   T &operator*() { return *ptr; }
 
-  void deallocate() { delete ptr; }
-
 private:
   T *ptr;
 };
@@ -97,7 +95,7 @@ public:
     while (node) {
       temp = node;
       node = node->next[0];
-      temp.deallocate();
+      delete temp;
     }
   }
 
