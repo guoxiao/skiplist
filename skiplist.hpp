@@ -1,3 +1,4 @@
+// SkipList: A STL-map like container using skip-list
 
 // Copyright (c) 2015 Guo Xiao <guoxiao08@gmail.com>
 
@@ -24,9 +25,10 @@
 #include <vector>
 #include <assert.h>
 #include <cstdlib>
-#include <iostream>
 #include <stdexcept>
-
+#ifndef NDEBUG
+  #include <iostream>
+#endif
 namespace guoxiao {
 namespace skiplist {
 
