@@ -164,7 +164,7 @@ public:
     iterator node = head_;
     std::vector<iterator> update(level_ + 1 + 1);
     for (int i = level_; i >= 0; i--) {
-      assert(node->level >= i);
+      assert(static_cast<int>(node->level) >= i);
       while (node->next[i] && node->next[i]->key < key) {
         node = node->next[i];
       }
