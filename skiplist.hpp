@@ -207,7 +207,7 @@ public:
     return emplace(std::move(value.first), std::move(value.second));
   }
 
-  iterator find(const key_type &key) {
+  iterator find(const key_type &key) const {
     iterator node = head_;
     for (int i = level_; i >= 0; i--) {
       while (node->next[i] && node->next[i]->key < key) {
@@ -232,12 +232,14 @@ public:
         update[i] = node;
       }
     }
-    assert(node->next[0]->key == key);
+    if (node->next[0]->key != key) {
+      throw std::out_of_range("skiplist::erase");
+    }
 
     node = node->next[0];
     for (int i = level_; i >= 0; i--) {
       if (update[i]) {
-        assert(node == update[i]->next[i]);
+        assert(node == iterator(update[i]->next[i]));
         update[i]->next[i] = node->next[i];
       }
     }
@@ -250,6 +252,10 @@ public:
       head_->level = level_;
       head_->next.resize(level_ + 1);
     }
+  }
+
+  void erase(iterator it) {
+    erase(it->key);
   }
 
   mapped_type &operator[](const key_type &key) {
@@ -277,7 +283,8 @@ public:
     return node->value;
   }
 
-  void dump() {
+#ifndef NDEBUG
+  void dump() const {
     for (int i = level_; i >= 0; i--) {
       std::cout << "====== level " << i << std::endl;
       auto node = head_;
@@ -288,6 +295,7 @@ public:
       }
     }
   }
+#endif
 
 private:
   size_t size_;
