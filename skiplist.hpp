@@ -226,7 +226,7 @@ public:
         return node->next[i];
       }
     }
-    return nullptr;
+    return end();
   }
 
   void erase(const key_type &key) {
@@ -241,11 +241,12 @@ public:
         update[i] = node;
       }
     }
-    if (!node->next[0] || node->next[0]->key != key) {
+    node = node->next[0];
+    if (node == end()) {
       throw std::out_of_range("skiplist::erase");
     }
+    assert(node->key == key);
 
-    node = node->next[0];
     for (int i = level_; i >= 0; i--) {
       if (update[i]) {
         assert(node == iterator(update[i]->next[i]));
@@ -256,7 +257,7 @@ public:
     delete node;
     --size_;
 
-    if (level_ > 0 && head_->next[level_] == nullptr) {
+    if (level_ > 0 && head_->next[level_] == end()) {
       level_--;
       head_->level = level_;
       head_->next.resize(level_ + 1);
@@ -269,7 +270,7 @@ public:
 
   mapped_type &operator[](const key_type &key) {
     iterator node = find(key);
-    if (node == nullptr) {
+    if (node == end()) {
       mapped_type value;
       node = emplace(key, value);
     }
@@ -278,7 +279,7 @@ public:
 
   mapped_type &at(const key_type &key) {
     iterator node = find(key);
-    if (node == nullptr) {
+    if (node == end()) {
       throw std::out_of_range("skiplist::at");
     }
     return node->value;
@@ -286,7 +287,7 @@ public:
 
   const mapped_type &at(const key_type &key) const {
     iterator node = find(key);
-    if (node == nullptr) {
+    if (node == end()) {
       throw std::out_of_range("skiplist::at");
     }
     return node->value;
