@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <cstdlib>
 #include <stdexcept>
+#include <functional>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -86,7 +87,10 @@ private:
   T *ptr;
 };
 
-template <typename Key, typename T>
+template <typename Key,
+  typename T,
+  typename Compare = std::less<Key>,
+  typename Allocator = std::allocator<std::pair<Key, T>>>
 class SkipList {
 public:
   typedef Key key_type;
@@ -180,7 +184,7 @@ public:
     std::vector<iterator> update(level_ + 1 + 1);
     for (int i = level_; i >= 0; i--) {
       assert(static_cast<int>(node->level) >= i);
-      while (node->next[i] && node->next[i]->key < key) {
+      while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
       update[i] = node;
@@ -225,7 +229,7 @@ public:
   iterator find(const key_type &key) const {
     iterator node = head_;
     for (int i = level_; i >= 0; i--) {
-      while (node->next[i] && node->next[i]->key < key) {
+      while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
       if (node->next[i] && node->next[i]->key == key) {
@@ -244,7 +248,7 @@ public:
     std::vector<iterator> update(level_ + 1);
 
     for (int i = level_; i >= 0; i--) {
-      while (node->next[i] && node->next[i]->key < key) {
+      while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
       if (node->next[i] && node->next[i]->key == key) {
@@ -322,6 +326,7 @@ private:
   size_t size_;
   size_t level_;
   iterator head_;
+  Compare compare;
   static size_t getRandomLevel() {
     size_t level = 0;
     while (rand() % 2) {
