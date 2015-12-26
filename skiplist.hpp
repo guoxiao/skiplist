@@ -49,7 +49,7 @@ template <typename T>
 class Iterator {
 public:
   Iterator() : ptr(nullptr){};
-  Iterator(T *begin) : ptr(begin){};
+  explicit Iterator(T *begin) : ptr(begin){};
   Iterator operator=(T *begin) {
     ptr = begin;
     return *this;
@@ -163,10 +163,10 @@ public:
   const_iterator begin() const noexcept { return head_; }
 
   const_iterator cbegin() noexcept { return head_; }
-  const_iterator cend() const noexcept { return nullptr; }
+  const_iterator cend() const noexcept { return iterator(); }
 
-  iterator end() noexcept { return nullptr; }
-  const_iterator end() const noexcept { return nullptr; }
+  iterator end() noexcept { return iterator(); }
+  const_iterator end() const noexcept { return iterator(); }
 
   template <typename K, typename V>
   iterator emplace(K &&key, V &&value) {
@@ -205,7 +205,7 @@ public:
       }
     }
     ++size_;
-    return n;
+    return iterator(n);
   }
 
   iterator insert(const value_type &value) {
@@ -223,7 +223,7 @@ public:
         node = node->next[i];
       }
       if (node->next[i] && node->next[i]->key == key) {
-        return node->next[i];
+        return iterator(node->next[i]);
       }
     }
     return end();
