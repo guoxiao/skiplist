@@ -235,6 +235,10 @@ public:
     return end();
   }
 
+  size_t count(const key_type &key) const {
+    return find(key) ? 1 : 0;
+  }
+
   void erase(const key_type &key) {
     iterator node = head_;
     std::vector<iterator> update(level_ + 1);
