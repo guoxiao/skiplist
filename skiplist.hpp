@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #ifndef NDEBUG
-  #include <iostream>
+#include <iostream>
 #endif
 namespace guoxiao {
 namespace skiplist {
@@ -146,7 +146,7 @@ public:
   // Move Assignment
   SkipList &operator=(SkipList &&s) noexcept {
     this->~SkipList();
-    size_= s.size_;
+    size_ = s.size_;
     level_ = s.level_;
     head_ = s.head_;
     s.head_ = new node_type();
@@ -241,7 +241,7 @@ public:
         update[i] = node;
       }
     }
-    if (node->next[0]->key != key) {
+    if (!node->next[0] || node->next[0]->key != key) {
       throw std::out_of_range("skiplist::erase");
     }
 
@@ -256,7 +256,7 @@ public:
     delete node;
     --size_;
 
-    if (head_->next[level_] == nullptr) {
+    if (level_ > 0 && head_->next[level_] == nullptr) {
       level_--;
       head_->level = level_;
       head_->next.resize(level_ + 1);
@@ -276,7 +276,7 @@ public:
     return node->value;
   }
 
-  mapped_type at(const key_type &key) {
+  mapped_type &at(const key_type &key) {
     iterator node = find(key);
     if (node == nullptr) {
       throw std::out_of_range("skiplist::at");
@@ -284,7 +284,7 @@ public:
     return node->value;
   }
 
-  const mapped_type at(const key_type &key) const {
+  const mapped_type &at(const key_type &key) const {
     iterator node = find(key);
     if (node == nullptr) {
       throw std::out_of_range("skiplist::at");
@@ -294,6 +294,7 @@ public:
 
 #ifndef NDEBUG
   void dump() const {
+    std::cout << "====== level: " << level_ << " size: " << size_ << std::endl;
     for (int i = level_; i >= 0; i--) {
       std::cout << "====== level " << i << std::endl;
       auto node = head_;
