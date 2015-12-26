@@ -159,10 +159,10 @@ public:
   bool empty() const { return size_ == 0; }
   size_t level() const { return level_; }
 
-  iterator begin() noexcept { return head_; }
-  const_iterator begin() const noexcept { return head_; }
+  iterator begin() noexcept { return iterator(head_->next[0]); }
+  const_iterator begin() const noexcept { return iterator(head_->next[0]); }
 
-  const_iterator cbegin() noexcept { return head_; }
+  const_iterator cbegin() noexcept { return iterator(head_->next[0]); }
   const_iterator cend() const noexcept { return iterator(); }
 
   iterator end() noexcept { return iterator(); }
