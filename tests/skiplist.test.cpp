@@ -3,16 +3,40 @@
 #include <gtest/gtest.h>
 
 using namespace guoxiao::skiplist;
-TEST(SkipList, insert) {
+TEST(SkipList, emplace) {
   SkipList<std::string, std::string> s;
   auto it = s.emplace("Hello", "World");
   EXPECT_EQ(s.size(), 1ul);
   EXPECT_EQ(it->key, "Hello");
   EXPECT_EQ(it->value, "World");
+}
+
+TEST(SkipList, insert) {
+  SkipList<std::string, std::string> s;
+  std::pair<std::string, std::string> item("Hello", "World");
+  auto it = s.insert(item);
+  EXPECT_EQ(s.size(), 1ul);
+  EXPECT_EQ(it->key, "Hello");
+  EXPECT_EQ(it->value, "World");
+}
+
+TEST(SkipList, insert_move) {
+  SkipList<std::string, std::string> s;
+  std::pair<std::string, std::string> item("Hello", "World");
+  auto it = s.insert(std::move(item));
+  EXPECT_EQ(s.size(), 1ul);
+  EXPECT_EQ(it->key, "Hello");
+  EXPECT_EQ(it->value, "World");
+}
+
+TEST(SkipList, find) {
+  SkipList<std::string, std::string> s;
+  auto it = s.emplace("Hello", "World");
   EXPECT_EQ(it, s.find("Hello"));
+  EXPECT_EQ(s.find("Hello")->value, "World");
+
   EXPECT_EQ(s["Hello"], "World");
   s.emplace("Hello2", "World2");
-  EXPECT_EQ(s.find("Hello")->value, "World");
   EXPECT_EQ(s["Hello"], "World");
   EXPECT_EQ(s.size(), 2ul);
   EXPECT_EQ(s.find("Hello2")->value, "World2");
@@ -25,10 +49,36 @@ TEST(SkipList, insert) {
   EXPECT_EQ(s2["Hello"], "World");
   EXPECT_EQ(s2.find("Hello2")->value, "World2");
   EXPECT_EQ(s2["Hello2"], "World2");
+}
 
+TEST(SkipList, index) {
+  SkipList<std::string, std::string> s;
+  s.emplace("Hello", "World");
+  EXPECT_EQ(s["Hello"], "World");
+  s.emplace("Hello2", "World2");
+  EXPECT_EQ(s["Hello"], "World");
+  EXPECT_EQ(s.size(), 2ul);
+  EXPECT_EQ(s["Hello2"], "World2");
+  s["Hello2"] = "World3";
+  EXPECT_EQ(s["Hello2"], "World3");
+}
+
+TEST(SkipList, at) {
+  SkipList<std::string, std::string> s;
+  s.emplace("Hello", "World");
+  EXPECT_EQ(s.at("Hello"), "World");
+  s.emplace("Hello2", "World2");
+  EXPECT_EQ(s.at("Hello"), "World");
+  EXPECT_EQ(s.size(), 2ul);
+  EXPECT_EQ(s.at("Hello2"), "World2");
+  s.at("Hello2") = "World3";
+  EXPECT_EQ(s.at("Hello2"), "World3");
+}
+TEST(SkipList, emplace_move) {
+  SkipList<std::string, std::string> s;
   std::string k("Movable");
   std::string v("MovableValue");
-  auto it2 = s2.emplace(std::move(k), std::move(v));
+  auto it2 = s.emplace(std::move(k), std::move(v));
   EXPECT_EQ(it2->key, "Movable");
   EXPECT_TRUE(k.empty());
   EXPECT_TRUE(v.empty());
@@ -40,8 +90,11 @@ TEST(SkipList, erase) {
   EXPECT_EQ(s.size(), 1ul);
   s.erase(it);
   EXPECT_EQ(s.size(), 0ul);
-  s.emplace("Hello", "World");
+  auto it2 = s.emplace("Hello", "World");
   EXPECT_EQ(s.size(), 1ul);
+  EXPECT_EQ(it2->value, "World");
+  EXPECT_EQ(s.find("Hello"), it2);
+  EXPECT_EQ(s["Hello"], "World");
   s.erase("Hello");
   EXPECT_EQ(s.size(), 0ul);
 }
