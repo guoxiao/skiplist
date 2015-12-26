@@ -33,6 +33,7 @@ TEST(SkipList, insert) {
   EXPECT_TRUE(k.empty());
   EXPECT_TRUE(v.empty());
 }
+
 TEST(SkipList, erase) {
   SkipList<std::string, std::string> s;
   auto it = s.emplace("Hello", "World");
@@ -45,6 +46,25 @@ TEST(SkipList, erase) {
   EXPECT_EQ(s.size(), 0ul);
 }
 
+TEST(SkipList, move_assign) {
+  SkipList<std::string, std::string> s;
+  s.emplace("Hello", "World");
+
+  SkipList<std::string, std::string> s2 = std::move(s);
+
+  EXPECT_EQ(s.size(), 0ul);
+  EXPECT_EQ(s2.size(), 1ul);
+}
+
+TEST(SkipList, move) {
+  SkipList<std::string, std::string> s;
+  s.emplace("Hello", "World");
+
+  SkipList<std::string, std::string> s2(std::move(s));
+
+  EXPECT_EQ(s.size(), 0ul);
+  EXPECT_EQ(s2.size(), 1ul);
+}
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
