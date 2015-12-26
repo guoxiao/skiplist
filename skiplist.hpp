@@ -49,15 +49,21 @@ template <typename T>
 class Iterator {
 public:
   Iterator() : ptr(nullptr){};
-  explicit Iterator(T *begin) : ptr(begin){};
-  Iterator operator=(T *begin) {
-    ptr = begin;
+  explicit Iterator(T *p) : ptr(p){};
+  Iterator operator=(T *p) {
+    ptr = p;
     return *this;
   }
 
   Iterator &operator++() {
-    *this = Iterator(ptr->next[0]);
+    ptr = ptr->next[0];
     return *this;
+  }
+
+  Iterator operator++(int) {
+    Iterator temp = *this;
+    ptr = ptr->next[0];
+    return temp;
   }
 
   bool operator!=(const Iterator &rhs) const { return ptr != rhs.ptr; }
@@ -68,13 +74,13 @@ public:
 
   bool operator!=(const T *p) const { return ptr != p; }
 
-  operator bool() { return ptr != nullptr; }
+  operator bool() const { return ptr != nullptr; }
 
-  operator T *() { return ptr; }
+  operator T *() const { return ptr; }
 
-  T *operator->() { return ptr; }
+  T *operator->() const { return ptr; }
 
-  T &operator*() { return *ptr; }
+  T &operator*() const { return *ptr; }
 
 private:
   T *ptr;
@@ -92,7 +98,7 @@ public:
 
   SkipList() : size_(0), level_(0), head_(new node_type()) {}
 
-  ~SkipList() {
+  ~SkipList() noexcept {
     iterator node = head_, temp;
     while (node) {
       temp = node;
