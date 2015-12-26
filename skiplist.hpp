@@ -137,14 +137,23 @@ public:
 
   // Copy Assignment
   SkipList &operator=(const SkipList &s) {
-    if (*this == s)
+    if (this == &s)
       return *this;
     SkipList tmp(s);
-    *this = std::move(tmp);
+    return *this = std::move(tmp);
   }
 
   // Move Assignment
-  SkipList &operator=(SkipList &&s) noexcept { *this = std::move(s); }
+  SkipList &operator=(SkipList &&s) noexcept {
+    this->~SkipList();
+    size_= s.size_;
+    level_ = s.level_;
+    head_ = s.head_;
+    s.head_ = new node_type();
+    s.level_ = 0;
+    s.size_ = 0;
+    return *this;
+  }
 
   size_t size() const { return size_; }
   bool empty() const { return size_ == 0; }

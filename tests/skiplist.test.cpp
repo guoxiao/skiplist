@@ -50,7 +50,8 @@ TEST(SkipList, copy_assign) {
   SkipList<std::string, std::string> s;
   s.emplace("Hello", "World");
 
-  SkipList<std::string, std::string> s2 = s;
+  SkipList<std::string, std::string> s2;
+  s2 = s;
 
   EXPECT_EQ(s.size(), 1ul);
   EXPECT_EQ(s2.size(), 1ul);
@@ -60,7 +61,8 @@ TEST(SkipList, move_assign) {
   SkipList<std::string, std::string> s;
   s.emplace("Hello", "World");
 
-  SkipList<std::string, std::string> s2 = std::move(s);
+  SkipList<std::string, std::string> s2;
+  s2 = std::move(s);
 
   EXPECT_EQ(s.size(), 0ul);
   EXPECT_EQ(s2.size(), 1ul);
