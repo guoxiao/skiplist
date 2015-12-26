@@ -30,3 +30,7 @@
 # Customized
 *.pyc
 tests/skiplist_test
+*.gcda
+*.gcno
+*.info
+tests/html
