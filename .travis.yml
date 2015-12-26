@@ -2,7 +2,7 @@ language: cpp
 
 compiler: clang
 
-script: make -C tests -j8 && tests/skiplist_test
+script: make -C tests -j8 && make -C tests test
 
 os: linux
 
