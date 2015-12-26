@@ -102,12 +102,12 @@ public:
   }
 
   // Move Ctor
-  SkipList(SkipList &&s) noexcept : size_(s.size),
+  SkipList(SkipList &&s) noexcept : size_(s.size_),
                                     level_(s.level_),
                                     head_(s.head_) {
-    s->head_ = new node_type();
-    s->level_ = 0;
-    s->size_ = 0;
+    s.head_ = new node_type();
+    s.level_ = 0;
+    s.size_ = 0;
   }
 
   // Copy Ctor
@@ -143,7 +143,7 @@ public:
     *this = std::move(tmp);
   }
 
-  // Copy Assignment
+  // Move Assignment
   SkipList &operator=(SkipList &&s) noexcept { *this = std::move(s); }
 
   size_t size() const { return size_; }
