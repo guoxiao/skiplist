@@ -1,9 +1,17 @@
 language: cpp
 
-compiler: clang
+compiler:
+  - clang
+  - gcc
+
+install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-5; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
 
 script: make -C tests -j8 && make -C tests test
 
 os: linux
 
-sudo: false
+sudo: true
