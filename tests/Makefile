@@ -1,8 +1,8 @@
 CXXFLAGS += -std=c++11 -g -O2\
-			-Wall -Wextra\
+			-Wall -Wextra -Weffc++\
 			-pedantic\
 			-fno-omit-frame-pointer\
-			-Igoogletest/googletest/include\
+			-isystem googletest/googletest/include\
 			-I.. -Igoogletest/googletest
 ifeq ($(CXX),g++)
 	CXXFLAGS += -fprofile-arcs -ftest-coverage

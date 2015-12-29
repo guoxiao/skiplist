@@ -39,8 +39,8 @@ struct SkipNode {
   ValueType value;
   size_t level;
   std::vector<SkipNode *> next;
-  SkipNode() : level(0), next(1) {}
-  SkipNode(SkipNode &&rhs) : level(rhs.level), next(std::move(rhs.next)) {}
+  SkipNode() : key(), value(), level(0), next(1) {}
+  SkipNode(SkipNode &&rhs) : key(), value(), level(rhs.level), next(std::move(rhs.next)) {}
 
   SkipNode(const SkipNode &) = delete;
   SkipNode &operator=(const SkipNode &) = delete;
@@ -51,7 +51,7 @@ class Iterator {
 public:
   Iterator() : ptr(nullptr){};
   explicit Iterator(T *p) : ptr(p){};
-  Iterator operator=(T *p) {
+  Iterator &operator=(T *p) {
     ptr = p;
     return *this;
   }
@@ -326,7 +326,7 @@ private:
   size_t size_;
   size_t level_;
   iterator head_;
-  Compare compare;
+  static Compare compare;
   static size_t getRandomLevel() {
     size_t level = 0;
     while (rand() % 2) {
