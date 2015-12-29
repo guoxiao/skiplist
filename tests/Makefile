@@ -1,4 +1,9 @@
-CXXFLAGS += -std=c++11 -g -O2 -Wall -Wextra -Igoogletest/googletest/include -I.. -Igoogletest/googletest
+CXXFLAGS += -std=c++11 -g -O2\
+			-Wall -Wextra\
+			-pedantic\
+			-fno-omit-frame-pointer\
+			-Igoogletest/googletest/include\
+			-I.. -Igoogletest/googletest
 ifeq ($(CXX),g++)
 	CXXFLAGS += -fprofile-arcs -ftest-coverage
 endif
