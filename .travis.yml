@@ -9,9 +9,17 @@ install:
   - sudo apt-get update -qq
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-5; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+  - pip install --user cpp-coveralls
 
-script: make -C tests -j8 && make -C tests test
+script:
+  - make -C tests -j8
+  - make -C tests test
+
+after_success:
+  - coveralls -b tests --exclude tests/googletest --verbose
 
 os: linux
 
 sudo: true
+
+# vim:shiftwidth=2

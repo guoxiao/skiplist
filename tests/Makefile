@@ -3,10 +3,8 @@ CXXFLAGS += -std=c++11 -g -O2\
 			-pedantic\
 			-fno-omit-frame-pointer\
 			-isystem googletest/googletest/include\
-			-I.. -Igoogletest/googletest
-ifeq ($(CXX),g++)
-	CXXFLAGS += -fprofile-arcs -ftest-coverage
-endif
+			-I.. -isystem googletest/googletest\
+			--coverage
 LIBS=-lpthread
 
 all: skiplist_test
