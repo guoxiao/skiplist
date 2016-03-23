@@ -33,4 +33,5 @@ tests/skiplist_test
 *.gcda
 *.gcno
 *.info
+*.gcov
 tests/html
