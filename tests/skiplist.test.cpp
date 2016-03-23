@@ -174,9 +174,8 @@ TEST(SkipList, move) {
   EXPECT_EQ(s.size(), 0ul);
   EXPECT_EQ(s2.size(), 1ul);
 }
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
-
