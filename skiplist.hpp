@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <functional>
+#include <memory>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -99,15 +100,16 @@ public:
   typedef SkipNode<Key, T> node_type;
   typedef Iterator<node_type> iterator;
   typedef Iterator<node_type> const_iterator;
+  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> node_allocator;
 
-  SkipList() : size_(0), level_(0), head_(new node_type()) {}
+  SkipList() : size_(0), level_(0), head_(create_node()) {}
 
   ~SkipList() noexcept {
     iterator node = head_, temp;
     while (node) {
       temp = node;
       node = node->next[0];
-      delete temp;
+      destroy_node(temp);
     }
   }
 
@@ -115,14 +117,14 @@ public:
   SkipList(SkipList &&s) noexcept : size_(s.size_),
                                     level_(s.level_),
                                     head_(s.head_) {
-    s.head_ = new node_type();
+    s.head_ = create_node();
     s.level_ = 0;
     s.size_ = 0;
   }
 
   // Copy Ctor
   SkipList(const SkipList &s)
-    : size_(s.size_), level_(s.level_), head_(new node_type()) {
+    : size_(s.size_), level_(s.level_), head_(create_node()) {
     iterator snode = s.head_, node = head_;
     std::vector<iterator> last(level_ + 1);
     head_->level = level_;
@@ -132,7 +134,7 @@ public:
     }
     snode = snode->next[0];
     while (snode) {
-      node = new node_type();
+      node = create_node();
       node->key = snode->key;
       node->value = snode->value;
       node->level = snode->level;
@@ -159,7 +161,7 @@ public:
     size_ = s.size_;
     level_ = s.level_;
     head_ = s.head_;
-    s.head_ = new node_type();
+    s.head_ = create_node();
     s.level_ = 0;
     s.size_ = 0;
     return *this;
@@ -193,7 +195,7 @@ public:
       }
     }
 
-    node_type *n = new node_type();
+    node_type *n = create_node();
     n->key = std::forward<K>(key);
     n->value = std::forward<V>(value);
 
@@ -268,7 +270,7 @@ public:
       }
     }
 
-    delete node;
+    destroy_node(node);
     --size_;
 
     if (level_ > 0 && head_->next[level_] == end()) {
@@ -333,6 +335,17 @@ private:
       ++level;
     }
     return level;
+  }
+  static iterator create_node() {
+    node_allocator al;
+    node_type *ret = al.allocate(1);
+    al.construct(ret);
+    return static_cast<iterator>(ret);
+  }
+  static void destroy_node(const iterator &node) {
+    node_allocator al;
+    al.destroy(static_cast<node_type *>(node));
+    al.deallocate(static_cast<node_type *>(node), 1);
   }
 };
 
