@@ -13,7 +13,7 @@ gtest-all.o: googletest/googletest/src/gtest-all.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 skiplist_test: ../skiplist.hpp *.cpp Makefile gtest-all.o
-	$(CXX) $(CXXFLAGS) $(LIBS) -o skiplist_test *.cpp gtest-all.o
+	$(CXX) $(CXXFLAGS) *.cpp gtest-all.o $(LIBS) -o skiplist_test
 
 test: skiplist_test
 	./skiplist_test
