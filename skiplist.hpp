@@ -22,12 +22,12 @@
 
 #pragma once
 
-#include <vector>
 #include <assert.h>
 #include <cstdlib>
-#include <stdexcept>
 #include <functional>
 #include <memory>
+#include <stdexcept>
+#include <vector>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -39,9 +39,8 @@ struct SkipNode {
   KeyType key;
   ValueType value;
   size_t level;
-  std::vector<SkipNode *> next;
-  SkipNode() : key(), value(), level(0), next(1) {}
-  SkipNode(SkipNode &&rhs) : key(), value(), level(rhs.level), next(std::move(rhs.next)) {}
+  SkipNode **next;
+  SkipNode() : key(), value(), level(0), next(nullptr) {}
 
   SkipNode(const SkipNode &) = delete;
   SkipNode &operator=(const SkipNode &) = delete;
@@ -101,6 +100,7 @@ public:
   typedef Iterator<node_type> iterator;
   typedef Iterator<node_type> const_iterator;
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> node_allocator;
+  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type *> next_allocator;
 
   SkipList() : size_(0), level_(0), head_(create_node()) {}
 
@@ -128,7 +128,9 @@ public:
     iterator snode = s.head_, node = head_;
     std::vector<iterator> last(level_ + 1);
     head_->level = level_;
-    head_->next.resize(level_ + 1);
+    next_allocator nl;
+    nl.deallocate(head_->next, 1);
+    head_->next = nl.allocate(level_ + 1);
     for (int i = level_; i >= 0; i--) {
       last[i] = head_;
     }
@@ -138,7 +140,9 @@ public:
       node->key = snode->key;
       node->value = snode->value;
       node->level = snode->level;
-      node->next.resize(snode->next.size());
+      next_allocator nl;
+      nl.deallocate(node->next, 1);
+      node->next = nl.allocate(snode->level + 1);
       for (int i = snode->level; i >= 0; i--) {
         last[i]->next[i] = node;
         last[i] = node;
@@ -202,12 +206,21 @@ public:
     size_t level = getRandomLevel();
     if (level > level_) {
       level = level_ + 1;
-      head_->next.resize(level + 1);
+      next_allocator nl;
+      node_type **newnext = nl.allocate(level + 1);
+      for (size_t i = 0; i < level; i++) {
+        newnext[i] = head_->next[i];
+      }
+      newnext[level] = nullptr;
+      nl.deallocate(head_->next, head_->level + 1);
+      head_->next = newnext;
       head_->level = level;
       update[level] = head_;
       level_ = level;
     }
-    n->next.resize(level + 1);
+    next_allocator nl;
+    nl.deallocate(n->next, 1);
+    n->next = nl.allocate(level + 1);
     n->level = level;
 
     for (int i = level; i >= 0; i--) {
@@ -276,7 +289,14 @@ public:
     if (level_ > 0 && head_->next[level_] == end()) {
       level_--;
       head_->level = level_;
-      head_->next.resize(level_ + 1);
+      next_allocator nl;
+      node_type **newnext = nl.allocate(level_ + 1);
+      for (size_t i = 0; i <= level_; i++) {
+        newnext[i] = head_->next[i];
+      }
+      newnext[level_] = nullptr;
+      nl.deallocate(head_->next, level_ + 2);
+      head_->next = newnext;
     }
   }
 
@@ -338,12 +358,17 @@ private:
   }
   static iterator create_node() {
     node_allocator al;
+    next_allocator nl;
     node_type *ret = al.allocate(1);
     al.construct(ret);
+    ret->next = nl.allocate(1);
+    ret->next[0] = nullptr;
     return static_cast<iterator>(ret);
   }
   static void destroy_node(const iterator &node) {
     node_allocator al;
+    next_allocator nl;
+    nl.deallocate(node->next, node->level + 1);
     al.destroy(static_cast<node_type *>(node));
     al.deallocate(static_cast<node_type *>(node), 1);
   }
