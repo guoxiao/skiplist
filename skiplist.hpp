@@ -27,7 +27,6 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
-#include <vector>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -126,9 +125,9 @@ public:
   SkipList(const SkipList &s)
     : size_(s.size_), level_(s.level_), head_(create_node()) {
     iterator snode = s.head_, node = head_;
-    std::vector<iterator> last(level_ + 1);
-    head_->level = level_;
     next_allocator nl;
+    node_type **last = nl.allocate(level_ + 1);
+    head_->level = level_;
     nl.deallocate(head_->next, 1);
     head_->next = nl.allocate(level_ + 1);
     for (int i = level_; i >= 0; i--) {
@@ -140,7 +139,6 @@ public:
       node->key = snode->key;
       node->value = snode->value;
       node->level = snode->level;
-      next_allocator nl;
       nl.deallocate(node->next, 1);
       node->next = nl.allocate(snode->level + 1);
       for (int i = snode->level; i >= 0; i--) {
@@ -149,6 +147,7 @@ public:
       }
       snode = snode->next[0];
     }
+    nl.deallocate(last, level_ + 1);
   }
 
   // Copy Assignment
@@ -187,7 +186,9 @@ public:
   template <typename K, typename V>
   iterator emplace(K &&key, V &&value) {
     iterator node = head_;
-    std::vector<iterator> update(level_ + 1 + 1);
+    next_allocator nl;
+    size_t update_size = level_ + 1 + 1;
+    node_type **update = nl.allocate(update_size);
     for (int i = level_; i >= 0; i--) {
       assert(static_cast<int>(node->level) >= i);
       while (node->next[i] && compare(node->next[i]->key, key)) {
@@ -195,6 +196,7 @@ public:
       }
       update[i] = node;
       if (node->next[i] && node->next[i]->key == key) {
+        nl.deallocate(update, update_size);
         throw std::runtime_error("conflict");
       }
     }
@@ -206,7 +208,6 @@ public:
     size_t level = getRandomLevel();
     if (level > level_) {
       level = level_ + 1;
-      next_allocator nl;
       node_type **newnext = nl.allocate(level + 1);
       for (size_t i = 0; i < level; i++) {
         newnext[i] = head_->next[i];
@@ -218,7 +219,6 @@ public:
       update[level] = head_;
       level_ = level;
     }
-    next_allocator nl;
     nl.deallocate(n->next, 1);
     n->next = nl.allocate(level + 1);
     n->level = level;
@@ -230,6 +230,7 @@ public:
       }
     }
     ++size_;
+    nl.deallocate(update, update_size);
     return iterator(n);
   }
 
@@ -260,7 +261,9 @@ public:
 
   void erase(const key_type &key) {
     iterator node = head_;
-    std::vector<iterator> update(level_ + 1);
+    next_allocator nl;
+    size_t update_size = level_ + 1;
+    node_type **update = nl.allocate(update_size);
 
     for (int i = level_; i >= 0; i--) {
       while (node->next[i] && compare(node->next[i]->key, key)) {
@@ -272,6 +275,7 @@ public:
     }
     node = node->next[0];
     if (node == end()) {
+      nl.deallocate(update, update_size);
       throw std::out_of_range("skiplist::erase");
     }
     assert(node->key == key);
@@ -282,7 +286,7 @@ public:
         update[i]->next[i] = node->next[i];
       }
     }
-
+    nl.deallocate(update, update_size);
     destroy_node(node);
     --size_;
 
