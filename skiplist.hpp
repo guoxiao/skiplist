@@ -328,7 +328,7 @@ private:
   size_t size_;
   size_t level_;
   iterator head_;
-  static Compare compare;
+  Compare compare;
   static size_t getRandomLevel() {
     size_t level = 0;
     while (rand() % 2) {
