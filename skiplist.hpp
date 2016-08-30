@@ -142,6 +142,7 @@ public:
       nl.deallocate(node->next, 1);
       node->next = nl.allocate(snode->level + 1);
       for (int i = snode->level; i >= 0; i--) {
+        node->next[i] = nullptr;
         last[i]->next[i] = node;
         last[i] = node;
       }
