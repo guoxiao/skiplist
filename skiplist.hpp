@@ -95,13 +95,18 @@ public:
   typedef Key key_type;
   typedef T mapped_type;
   typedef std::pair<Key, T> value_type;
+  typedef Compare key_compare;
+  typedef Allocator allocator_type;
   typedef SkipNode<Key, T> node_type;
+  typedef size_t size_type;
+
   typedef Iterator<node_type> iterator;
   typedef Iterator<node_type> const_iterator;
+
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> node_allocator;
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type *> next_allocator;
 
-  SkipList() : size_(0), level_(0), head_(create_node()) {}
+  SkipList() : size_(0), head_(create_node()) {}
 
   ~SkipList() noexcept {
     iterator node = head_, temp;
@@ -114,23 +119,21 @@ public:
 
   // Move Ctor
   SkipList(SkipList &&s) noexcept : size_(s.size_),
-                                    level_(s.level_),
                                     head_(s.head_) {
     s.head_ = create_node();
-    s.level_ = 0;
     s.size_ = 0;
   }
 
   // Copy Ctor
   SkipList(const SkipList &s)
-    : size_(s.size_), level_(s.level_), head_(create_node()) {
+    : size_(s.size_), head_(create_node()) {
     iterator snode = s.head_, node = head_;
     next_allocator nl;
-    node_type **last = nl.allocate(level_ + 1);
-    head_->level = level_;
+    node_type **last = nl.allocate(s.level() + 1);
+    head_->level = s.level();
     nl.deallocate(head_->next, 1);
-    head_->next = nl.allocate(level_ + 1);
-    for (int i = level_; i >= 0; i--) {
+    head_->next = nl.allocate(level() + 1);
+    for (int i = level(); i >= 0; i--) {
       last[i] = head_;
     }
     snode = snode->next[0];
@@ -148,7 +151,7 @@ public:
       }
       snode = snode->next[0];
     }
-    nl.deallocate(last, level_ + 1);
+    nl.deallocate(last, level() + 1);
   }
 
   // Copy Assignment
@@ -163,17 +166,15 @@ public:
   SkipList &operator=(SkipList &&s) noexcept {
     this->~SkipList();
     size_ = s.size_;
-    level_ = s.level_;
     head_ = s.head_;
     s.head_ = create_node();
-    s.level_ = 0;
     s.size_ = 0;
     return *this;
   }
 
-  size_t size() const { return size_; }
+  size_type size() const { return size_; }
   bool empty() const { return size_ == 0; }
-  size_t level() const { return level_; }
+  size_type level() const { return head_->level; }
 
   iterator begin() noexcept { return iterator(head_->next[0]); }
   const_iterator begin() const noexcept { return iterator(head_->next[0]); }
@@ -188,9 +189,9 @@ public:
   iterator emplace(K &&key, V &&value) {
     iterator node = head_;
     next_allocator nl;
-    size_t update_size = level_ + 1 + 1;
+    size_t update_size = level() + 1 + 1;
     node_type **update = nl.allocate(update_size);
-    for (int i = level_; i >= 0; i--) {
+    for (int i = level(); i >= 0; i--) {
       assert(static_cast<int>(node->level) >= i);
       while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
@@ -206,25 +207,24 @@ public:
     n->key = std::forward<K>(key);
     n->value = std::forward<V>(value);
 
-    size_t level = getRandomLevel();
-    if (level > level_) {
-      level = level_ + 1;
-      node_type **newnext = nl.allocate(level + 1);
-      for (size_t i = 0; i < level; i++) {
+    size_t newlevel = getRandomLevel();
+    if (newlevel > level()) {
+      newlevel = level() + 1;
+      node_type **newnext = nl.allocate(newlevel + 1);
+      for (size_t i = 0; i < newlevel; i++) {
         newnext[i] = head_->next[i];
       }
-      newnext[level] = nullptr;
+      newnext[newlevel] = nullptr;
       nl.deallocate(head_->next, head_->level + 1);
       head_->next = newnext;
-      head_->level = level;
-      update[level] = head_;
-      level_ = level;
+      head_->level = newlevel;
+      update[newlevel] = head_;
     }
     nl.deallocate(n->next, 1);
-    n->next = nl.allocate(level + 1);
-    n->level = level;
+    n->next = nl.allocate(newlevel + 1);
+    n->level = newlevel;
 
-    for (int i = level; i >= 0; i--) {
+    for (int i = newlevel; i >= 0; i--) {
       if (update[i]) {
         n->next[i] = update[i]->next[i];
         update[i]->next[i] = n;
@@ -245,7 +245,7 @@ public:
 
   iterator find(const key_type &key) const {
     iterator node = head_;
-    for (int i = level_; i >= 0; i--) {
+    for (int i = level(); i >= 0; i--) {
       while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
@@ -263,10 +263,10 @@ public:
   void erase(const key_type &key) {
     iterator node = head_;
     next_allocator nl;
-    size_t update_size = level_ + 1;
+    size_t update_size = level() + 1;
     node_type **update = nl.allocate(update_size);
 
-    for (int i = level_; i >= 0; i--) {
+    for (int i = level(); i >= 0; i--) {
       while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
@@ -281,7 +281,7 @@ public:
     }
     assert(node->key == key);
 
-    for (int i = level_; i >= 0; i--) {
+    for (int i = level(); i >= 0; i--) {
       if (update[i]) {
         assert(node == iterator(update[i]->next[i]));
         update[i]->next[i] = node->next[i];
@@ -291,16 +291,15 @@ public:
     destroy_node(node);
     --size_;
 
-    if (level_ > 0 && head_->next[level_] == end()) {
-      level_--;
-      head_->level = level_;
+    if (level() > 0 && head_->next[level()] == end()) {
+      head_->level--;
       next_allocator nl;
-      node_type **newnext = nl.allocate(level_ + 1);
-      for (size_t i = 0; i <= level_; i++) {
+      node_type **newnext = nl.allocate(level() + 1);
+      for (size_t i = 0; i <= level(); i++) {
         newnext[i] = head_->next[i];
       }
-      newnext[level_] = nullptr;
-      nl.deallocate(head_->next, level_ + 2);
+      newnext[level()] = nullptr;
+      nl.deallocate(head_->next, level() + 2);
       head_->next = newnext;
     }
   }
@@ -336,8 +335,8 @@ public:
 
 #ifndef NDEBUG
   void dump() const {
-    std::cout << "====== level: " << level_ << " size: " << size_ << std::endl;
-    for (int i = level_; i >= 0; i--) {
+    std::cout << "====== level: " << level() << " size: " << size_ << std::endl;
+    for (int i = level(); i >= 0; i--) {
       std::cout << "====== level " << i << std::endl;
       auto node = head_;
       while (node->next[i]) {
@@ -351,7 +350,6 @@ public:
 
 private:
   size_t size_;
-  size_t level_;
   iterator head_;
   Compare compare;
   static size_t getRandomLevel() {
