@@ -106,7 +106,7 @@ public:
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> node_allocator;
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type *> next_allocator;
 
-  SkipList() : size_(0), head_(create_node()) {}
+  SkipList() : size_(0), head_(create_node()), compare() {}
 
   ~SkipList() noexcept {
     iterator node = head_, temp;
@@ -119,14 +119,15 @@ public:
 
   // Move Ctor
   SkipList(SkipList &&s) noexcept : size_(s.size_),
-                                    head_(s.head_) {
+                                    head_(s.head_),
+                                    compare() {
     s.head_ = create_node();
     s.size_ = 0;
   }
 
   // Copy Ctor
   SkipList(const SkipList &s)
-    : size_(s.size_), head_(create_node()) {
+    : size_(s.size_), head_(create_node()), compare() {
     iterator snode = s.head_, node = head_;
     next_allocator nl;
     node_type **last = nl.allocate(s.level() + 1);
