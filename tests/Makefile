@@ -24,6 +24,6 @@ cov: test
 	xdg-open html/index.html
 
 clean:
-	rm -rf skiplist_test *.o *.gcda *.info html
+	rm -rf skiplist_test *.o *.gcda *.info html *.gcno
 
 .PHONY: test cov clean
