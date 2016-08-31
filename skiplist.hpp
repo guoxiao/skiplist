@@ -198,7 +198,7 @@ public:
         node = node->next[i];
       }
       update[i] = node;
-      if (node->next[i] && node->next[i]->key == key) {
+      if (node->next[i] && !compare(node->next[i]->key, key) && !compare(key, node->next[i]->key)) {
         nl.deallocate(update, update_size);
         throw std::runtime_error("conflict");
       }
@@ -250,7 +250,7 @@ public:
       while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
-      if (node->next[i] && node->next[i]->key == key) {
+      if (node->next[i] && !compare(node->next[i]->key, key) && !compare(key, node->next[i]->key)) {
         return iterator(node->next[i]);
       }
     }
@@ -271,7 +271,7 @@ public:
       while (node->next[i] && compare(node->next[i]->key, key)) {
         node = node->next[i];
       }
-      if (node->next[i] && node->next[i]->key == key) {
+      if (node->next[i] && !compare(node->next[i]->key, key) && !compare(key, node->next[i]->key)) {
         update[i] = node;
       }
     }
@@ -280,7 +280,7 @@ public:
       nl.deallocate(update, update_size);
       throw std::out_of_range("skiplist::erase");
     }
-    assert(node->key == key);
+    assert(!compare(node->key, key) && !compare(key, node->key));
 
     for (int i = level(); i >= 0; i--) {
       if (update[i]) {
